@@ -1,7 +1,6 @@
 
 # 泛型
 - 为什么要有泛型  
-    - 编译时保证数据安全
 - 定义
 - 如何使用泛型
     - 泛型只能是包装类或类，不能是基本数据类型
@@ -12,7 +11,8 @@
 - 泛型应用举例  
   
 ##  1. <a name=''></a>为什么要使用泛型
-集合容器在声明时不能确定到底允许存什么类型的数据，``JDK5``之后引入泛型来控制集合的类型，可以在编译期就校验集合中元素的合法性。  
+集合容器在声明时不能确定到底允许存什么类型的数据，``JDK5``之后引入泛型来控制集合的类型，
+**集合接口**和**集合类**在``JDK5``时都修改为带泛型的接口，可以在编译期就校验集合中元素的合法性。  
 类似一个标签，标识容器中可以放什么。比如可回收垃圾箱内只能放可回收垃圾。  
 
 ##  2. <a name='-1'></a>泛型的定义
@@ -23,10 +23,10 @@
 
 ``List<String>``表示只能存放String的List接口
 
-##  3. <a name='-1'></a>如何使用泛型
-- 集合接口或集合类在JDK5时都修改为带泛型的接口
-- 在实例化集合类时，可以指明具体的泛型类型
-- 指明完以后，在集合类或接口中凡是定义类或接口时，内部结构（``方法``、``构造器``、``属性``等）使用到类的泛型的泛型的位置，都指定为实例化时声明的类型
+## 如何使用泛型 
+- 在实例化集合类时，可以指明具体的泛型类型，指明完以后，在集合类或接口中凡是定义类或接口时，内部结构（``方法``、``构造器``、``属性``等）使用到类的泛型的泛型的位置，都指定为实例化时声明的类型
+- 泛型的类型必须是类，不能是基本数据类型，需要用对应的包装类
+- 如果实例化时，没有指定泛型的类型，默认类型是Object类
   ```java
   // 以iterator接口为例，声明时指定了E后(比如说指定为String)，next()方法的返回类型就确定为String了
   public interface Iterator<E> {
@@ -45,8 +45,7 @@
       }
 
   ```
-- 泛型的类型必须是类，不能是基本数据类型，需要用对应的包装类
-- 如果实例化时，没有指定泛型的类型，默认类型是Object类
+
 ###  3.1. <a name='-1'></a>不使用泛型
 需要自行处理类型校验等。
 ```java
@@ -110,7 +109,7 @@
    ```
   
 ### 泛型类、泛型接口
-- 定义后声明时不指定泛型的类型，则默认为Object类型。不推荐这么使用。
+- 定义完类和接口后，声明时如果不指定泛型的类型，则默认为Object类型。不推荐这么使用。
 - 子类继承带泛型的父类时，可以选择继承泛型，也可以选择结束泛型。如果指明了父类的泛型类型，则子类不是带泛型的，实例化子类对象时不需要指明泛型类型。如果没有指明父类的泛型类型，则子类仍然是泛型类。
     ```java
     // 子类不保留泛型，指定父类的具体类型
@@ -149,7 +148,7 @@
     public class SubOrder1<T2, A, B> extends Order<Integer, T2> {
     }
     ```
-  使用时，SubOrder如果指定了泛型类型，编译器会报错
+  如果子类结束了泛型，但是声明时指定了泛型类型，编译器会报错
     ```java
     // Type 'Generic.GenericTest.SubOrder' does not have type parameters
     //SubOrder<String> subOrder = new SubOrder();
@@ -160,12 +159,12 @@
     //subOrder1.setOrderType(123);
     subOrder1.setOrderType("微信商城订单");
     ```
-- 泛型类可能有多个泛型参数
+- 可能定义多个泛型参数
     ```java
     public interface Map<K, V>
     ```
-- 泛型类的泛型类的构造器无需加<>，但在实例化时需要加
-- 实例化后，泛型的结构必须与声明时保持一致
+- 泛型类的构造器无需加<>，但在实例化时需要加泛型的类型
+- 实例化后，泛型的结构必须与声明时保持一致，不一致编译器会报错
 - 泛型不同的引用不能相互赋值
     ```java
     // 泛型不同的引用不能相互赋值
@@ -201,3 +200,68 @@ public <E> List<E> ArrayToList(E[] arr) {
 }
 ```
 - 泛型方法可以是静态方法，因为泛型方法中的泛型参数是调用时指定的，并非实例化对象时指定的。
+
+## 泛型在继承上的体现
+多态：子类对象可以赋值给父类对象。
+但是若类A是类B的父类，G<A>和G<B>不具备子父类关系。如``String``是``Object``的子类，但是``List<String>``不是``List<Object>``的子类。``List<String>``的对象不能赋值给``List<Object>``对象。二者共同的父类是``List<?>``。  
+但是若类A是类B的父类，A<G>和B<G>具备子父类关系。
+
+## 通配符的使用
+因为泛型会打破继承的关系，导致多态不再生效，会需要些很多重载的方法。使用通配符?可以解决这个问题。
+```java
+// 泛型不同的引用不存在多态，不能相互赋值
+ArrayList<String> stringList = null;
+ArrayList<Integer> intList = null;
+// Required type: ArrayList<String>, Provided: ArrayList<Integer>
+// stringList = intList;
+
+// ArrayList<?>是个泛型实例的通用父类
+ArrayList<?> list = null;
+list = intList;
+
+//遍历ArrayList<?>中的元素，不能用?表示元素类型，可以用Object
+public void print(List<?> list) {
+    for(Object i: list) {
+        System.out.print(i + " ");
+    }
+    System.out.println();
+}
+```
+### 通配符的增删改查
+- 当将``List<?>``指向子类后，只能添加``null``，不能再添加其他类型的数据。
+- 允许读取数据，读取的数据类型为Object。
+    ```java
+    // Required type: int, Provided: capture of ?
+    // int value = list.get(0);
+    Object value = list.get(0);
+    ```
+
+### 有限制条件的通配符
+``? extends A``: 可以作为A和A的子类的公共父类。上确界是A。  
+   - 读取时，最小可以用A来接收对象。
+   - 赋值时，只能用Object去赋值。  
+   
+``? super A``：可以作为A和A的父类的公共父类。下确界是A。
+   - 读取时，只能用Object来接收对象。
+   - 赋值时，可以用A或A的子类去赋值。
+```java
+@Test
+public void test3() {
+    List<? extends Order> list1 = null;
+    List<? super Order> list2 = null;
+
+    List<Order> list3 = null;
+    List<SubOrder> list4 = null;
+    List<Object> list5 = null;
+
+    // ? extends Order表示可以接受Order或Order的子类作为泛型的类型，父类Object没法给它赋值
+    list1 = list3;
+    list1 = list4;
+    //list1 = list5;
+
+    // ? super Order表示可以接受Order或Order的父类作为泛型的类型，子类SubOrder没法给它赋值
+    list2 = list3;
+    //list2 = list4;
+    list2 = list5;
+}
+```

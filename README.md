@@ -10,6 +10,7 @@
 - Java基础  
 - Java高级  
     - 集合  
-    - [泛型](https://github.com/ZHI-JIU/JavaBasic/blob/main/ParameterizedType/README.md)
+    - [泛型](https://github.com/ZHI-JIU/JavaBasic/blob/main/Generic/README.md)
+    - IO流
     - 反射
     
