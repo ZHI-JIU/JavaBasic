@@ -199,8 +199,30 @@ public void test01() throws IOException {
 
 * 构造器除了要传入字节流外，还需要传入目标文件的编码方式。
 # 标准输入输出流
+``System.in``: 默认从键盘输入，可以通过``setIn(InputStream is)``改变输入流。
+``System.out``: 默认从控制台输出，可以通过``setOut(OutputStream os)``改变输出流。
+
 # 打印流
 # 数据流
-# 对象流
+# 对象流（处理流的一种）
+用于存储和读取基本数据类型或对象的处理流，可以把Java中的对象放到数据流中，也可以将数据流中的数据转换成对象。  
+
+``ObjectInputStream``: 反序列化，从文件中的数据读取到内存中的对象。
+``ObjectOutputStream``：序列化，将内存中的对象作为数据输出到文件中。
+* ``ObjectInputStream``和``ObjectOutputStream``不能序列化``static``和``transient``修饰的成员变量
+
+## 对象的序列化机制
+* 序列化：将内存中的Java对象转换成与平台无关的二进制流，这个二进制流可以保存在磁盘中，也可以通过网络传输到另一个网络节点上。
+* 反序列化：程序获取到二进制流，可以恢复出内存中的Java对象。
+
+## 实现序列化机制
+Java对象可序列化需要满足以下几点，详见[ObjectIOTest.Person](https://github.com/ZHI-JIU/JavaBasic/blob/main/IO/ObjectIOTest/Person.java)
+1. 实现Serializable接口
+2. 提供全局常量serialVersionUID  
+2.1. IDEA中设置自动生成：File -> Setting -> Editor -> Inspections -> 搜索UID -> Serializable class without xxx
+3. 序列化后，类的结构发生变化(如增删属性)，但是serialVersionUID不变，仍可以反序列化。但是如果不在类中指定serialVersionUID，这个值由系统自动生成，修改类的结构后，这个值变了，无法再反序列化。
+4. 类内的所有属性可序列化（基本数据类型都是可序列化的）。
+5. ``static``和``transient``修饰的成员变量不可序列化，反序列化后得到null。
+
 # 随机存取文件流
 # NIO.2中Path、Paths、Files类的使用
