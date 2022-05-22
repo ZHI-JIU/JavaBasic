@@ -8,6 +8,6 @@ public class SuperMan implements Human {
 
     @Override
     public void eat(String food) {
-        System.out.println(String.format("eat %s.", food));
+        System.out.printf("eat %s.%n", food);
     }
 }

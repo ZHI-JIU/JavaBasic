@@ -78,9 +78,9 @@ A.java  --------------> A.class(一个类对应一个或多个字节码文件) -
 1. 加载：将类的class文件读入内存中，并创建一个Class对象。
 2. 链接：将Java类的二进制代码合并到JVM的运行状态中的过程。  
 2.1. 验证：取保加载的类信息符合JVM规范。  
-2.2. 准备：将类中的静态变量使用默认值初始化，并从方法区分配内存。  
-2.3. 解析： 
-3. 初始化：执行类构造器方法<clinit>()（是构造类信息的，不是造对象的那个构造器）。由编译器自动收集类中所有变量的赋值动作和静态代码块中的语句合并产生的。即将显示赋值的变量初始化。  
+2.2. 准备：将类中的**静态变量**使用**默认值**初始化，并从方法区分配内存。  
+2.3. 解析： 虚拟机常量池中的符号引用（常量名）替换成直接引用（地址）的过程。
+3. 初始化：执行类构造器方法<clinit>()（是构造类信息的，不是造对象的那个构造器）。由编译器自动收集类中**所有变量的赋值动作**和**静态代码块**中的语句合并产生的。即将显示赋值的变量初始化。  
 3.1. 类初始化时，如果父类还没有初始化，则会先触发父类的初始化。  
 3.2. JVM保证一个类的<clinit>()在多线程中被正确地加锁和同步。
 
@@ -101,6 +101,11 @@ JVM定义了三种类加载器：
 通过反射获取运行时类，再由``newInstance()``创建这个类的对象。
 1. 运行时类必须提供空参构造器。newInstance实际调用的是运行时类的**空参构造器**，如果没有定义空参构造器会报错``NoSuchMethodException``
 2. 空参构造器的访问权限要可见。通常设置为public。否则报错``IllegalAccessException``
+
+在javabean中要求提供一个public的空参构造器的原因：
+1、便于通过反射创建运行时类对象。
+2、便于子类继承运行时类时，调用super()时保证父类有该构造器。
+
 ```java
 @Test
 public void test02() throws IllegalAccessException, InstantiationException {
@@ -129,7 +134,7 @@ public void test02() throws IllegalAccessException, InstantiationException {
 有继承，有实现接口。属性、构造器、方法都有private、default、public权限的。
 
 * 获取属性结构：
-    * ``getFields()``：获取当前运行时类及其父类中声明为public访问权限的属性
+    * ``getFields()``：获取当前运行时类及其父类中声明为**public**访问权限的属性
     * ``getDeclaredFields()``：获取当前运行时类中声明的所有属性，不考虑权限。不包含父类中声明的属性
     * ``getModifiers()``：获取属性的权限修饰符
     * ``getType()``：获取属性的类型
@@ -149,10 +154,94 @@ public void test02() throws IllegalAccessException, InstantiationException {
     * ``getGenericSuperClass()``：获取带泛型的父类
     * ``(ParameterizedType ) clazz.getGenericSuperClass()``：获取带泛型的父类的泛型
 
+```java
+    @Test
+    public void test04() {
+        Class clazz = Person.class;
+
+        // 获取属性结构
+        // getFields() 得到类和父类的pubic属性
+        System.out.println("=====================");
+        System.out.println("     getFields()     ");
+        System.out.println("=====================");
+        Field[] fields = clazz.getFields();
+        // public int Reflect.ReflectTest.Person.age
+        // public double Reflect.ReflectTest.Creature.weight
+        for (Field field: fields) {
+            System.out.println(field);
+        }
+
+        System.out.println();
+        System.out.println("=====================");
+        System.out.println(" getDeclaredFields() ");
+        System.out.println("=====================");
+        // getDeclaredFields() 获取当前运行时类中声明的所有属性，不考虑权限。不包含父类中声明的属性
+        // private static final long Reflect.ReflectTest.Person.serialVersionUID
+        // private java.lang.String Reflect.ReflectTest.Person.name
+        // public int Reflect.ReflectTest.Person.age
+        // int Reflect.ReflectTest.Person.id
+        Field[] declaredFields = clazz.getDeclaredFields();
+        for (Field field: declaredFields) {
+            System.out.println(field);
+        }
+
+        System.out.println();
+        // 获取属性具体的结构（权限修饰符，数据类型，变量名）
+        for (Field field: declaredFields) {
+            System.out.printf("field: %s%n", field);
+            // 获取权限修饰符
+            int modifiers = field.getModifiers();
+            System.out.printf("modifiers: %s%n", modifiers);
+            System.out.printf("string modifiers: %s%n", Modifier.toString(modifiers));
+
+            // 获取数据类型
+            Class type = field.getType();
+            System.out.printf("type: %s%n",type);
+
+            // 获取变量名
+            String name = field.getName();
+            System.out.printf("name: %s%n", name);
+
+            System.out.println();
+        }
+//        private static final long Reflect.ReflectTest.Person.serialVersionUID
+//        private java.lang.String Reflect.ReflectTest.Person.name
+//        public int Reflect.ReflectTest.Person.age
+//        int Reflect.ReflectTest.Person.id
+//
+//        field: private static final long Reflect.ReflectTest.Person.serialVersionUID
+//        modifiers: 26
+//        string modifiers: private static final
+//        type: long
+//        name: serialVersionUID
+//
+//        field: private java.lang.String Reflect.ReflectTest.Person.name
+//        modifiers: 2
+//        string modifiers: private
+//        type: class java.lang.String
+//        name: name
+//
+//        field: public int Reflect.ReflectTest.Person.age
+//        modifiers: 1
+//        string modifiers: public
+//        type: int
+//        name: age
+//
+//        field: int Reflect.ReflectTest.Person.id
+//        modifiers: 0
+//        string modifiers:
+//        type: int
+//        name: id
+    }
+```
+
 # **调用运行时类的指定结构**
 ## 调用指定的属性
 
 ## 调用指定的方法
+```java
+
+```
 
 ## 调用指定的构造器
 虽然可以这么写，其实更通用的是使用空参构造器``newInstance()``。
@@ -189,3 +278,4 @@ public void test02() throws IllegalAccessException, InstantiationException {
 
 ### 动态代理与AOP（Aspect Orient Programming）
 多个代码段调用相同的方法，而又希望这个方法可以是动态的，可以放入任意的方法。
+[!image(AOP)]

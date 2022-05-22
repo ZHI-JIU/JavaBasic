@@ -7,7 +7,7 @@ public class Person extends Creature<String> implements Comparable<String>, MyIn
 
     private static final long serialVersionUID = 8619426540279363279L;
     // 属性，private、public、default三种权限
-    private  String name;
+    private String name;
     @MyAnnotation(value = "age")
     public int age;
     int id;
@@ -16,6 +16,7 @@ public class Person extends Creature<String> implements Comparable<String>, MyIn
     Person() {
     }
 
+    @MyAnnotation(value = "abc")
     private Person(String name, int age) {
         this.name = name;
         this.age = age;
@@ -57,7 +58,7 @@ public class Person extends Creature<String> implements Comparable<String>, MyIn
     }
 
     @MyAnnotation()
-    private String showNation(String nation) {
+    private String showNation(String nation) throws NullPointerException, ClassCastException {
         System.out.println("国籍：" + nation);
         return nation;
     }
@@ -79,5 +80,9 @@ public class Person extends Creature<String> implements Comparable<String>, MyIn
     @Override
     public int compareTo(String o) {
         return 0;
+    }
+
+    private static void showDesc() {
+        System.out.println("类静态方法：Person");
     }
 }
